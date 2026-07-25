@@ -11,12 +11,21 @@ from nonebot.exception import FinishedException
 
 # --- 配置区 ---
 config = get_driver().config
-api_key = getattr(config, "moonshot_api_key", "")
 
-client = openai.OpenAI(
-    api_key=api_key, 
-    base_url="https://api.moonshot.cn/v1",
-)
+deepseek_api_key = getattr(config, "deepseek_api_key", "")
+moonshot_api_key = getattr(config, "moonshot_api_key", "")
+
+# 优先使用 DeepSeek，没有设置则回退到 Moonshot
+if deepseek_api_key:
+    client = openai.OpenAI(
+        api_key=deepseek_api_key,
+        base_url="https://api.deepseek.com",
+    )
+else:
+    client = openai.OpenAI(
+        api_key=moonshot_api_key,
+        base_url="https://api.moonshot.cn/v1",
+    )
 
 chat_history = {}
 MAX_HISTORY = 10 
