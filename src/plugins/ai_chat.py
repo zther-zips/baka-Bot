@@ -21,8 +21,8 @@ if deepseek_api_key:
         api_key=deepseek_api_key,
         base_url="https://api.deepseek.com",
     )
-    # 优先读取配置项 deepseek_model，默认使用 deepseek-chat
-    AI_MODEL = getattr(config, "deepseek_model", "deepseek-chat")
+    # 优先读取配置项 deepseek_model，默认使用 deepseek-v4-flash
+    AI_MODEL = getattr(config, "deepseek_model", "deepseek-v4-flash")
 else:
     client = openai.OpenAI(
         api_key=moonshot_api_key,
