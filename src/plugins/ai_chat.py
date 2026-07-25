@@ -15,17 +15,21 @@ config = get_driver().config
 deepseek_api_key = getattr(config, "deepseek_api_key", "")
 moonshot_api_key = getattr(config, "moonshot_api_key", "")
 
-# 优先使用 DeepSeek，没有设置则回退到 Moonshot
+# 根据使用的 API Key 动态决定 Client 和 Model 名称
 if deepseek_api_key:
     client = openai.OpenAI(
         api_key=deepseek_api_key,
         base_url="https://api.deepseek.com",
     )
+    # 优先读取配置项 deepseek_model，默认使用 deepseek-chat
+    AI_MODEL = getattr(config, "deepseek_model", "deepseek-chat")
 else:
     client = openai.OpenAI(
         api_key=moonshot_api_key,
         base_url="https://api.moonshot.cn/v1",
     )
+    # 优先读取配置项 moonshot_model，默认使用 moonshot-v1-8k
+    AI_MODEL = getattr(config, "moonshot_model", "moonshot-v1-8k")
 
 chat_history = {}
 MAX_HISTORY = 10 
@@ -95,7 +99,7 @@ async def _(bot: Bot, event: MessageEvent):
         rel_level, behavior = "普通朋友", "语气礼貌温柔，是个笨笨的猫猫。" + limit_hint
 
     dynamic_system_content = (
-        f"你名为baka。说话用“咱”“baka”称呼。回复常加上颜文字。不用表情。{behavior} "
+        f"你名为baka。说话用“咱”“baka”称呼。回复常加上颜文字。不使用emoji回复。{behavior} "
         f"当前说话的是【{user_name}】，关系【{rel_level}】。"
     )
 
@@ -127,7 +131,7 @@ async def _(bot: Bot, event: MessageEvent):
 
     try:
         completion = client.chat.completions.create(
-            model="moonshot-v1-8k",
+            model=AI_MODEL,  # ✅ 动态读取自配置的 AI_MODEL，解决报错！
             messages=chat_history[session_id],
             temperature=0.6, 
             max_tokens=70,   
