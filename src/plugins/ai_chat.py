@@ -131,13 +131,16 @@ async def _(bot: Bot, event: MessageEvent):
 
     try:
         completion = client.chat.completions.create(
-            model=AI_MODEL,  # ✅ 动态读取自配置的 AI_MODEL，解决报错！
+            model=AI_MODEL,
             messages=chat_history[session_id],
             temperature=0.6, 
-            max_tokens=70,   
+            max_tokens=250,   
         )
         
-        reply = completion.choices[0].message.content.strip()
+        # 2. 兼容 DeepSeek 的 reasoning 字段和普通 content
+        msg = completion.choices[0].message
+        reply = (getattr(msg, "content", "") or getattr(msg, "reasoning_content", "") or "").strip()
+
         if not reply:
             reply = "baka不知道该说什么喵..."
 
